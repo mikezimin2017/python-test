@@ -5,7 +5,7 @@ from pathlib import Path
 import unittest
 
 
-class TestSuite3(unittest.TestCase):
+class TestSuite5(unittest.TestCase):
 
     def test_convert(self):
         result = jsontohtml.convert_from_file('tests/test5-source.json')

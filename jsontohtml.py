@@ -1,16 +1,17 @@
 import json
 from pathlib import Path
+from collections import OrderedDict
 
-def convert_from_file(fileName):
-    content = Path(fileName).read_text()
+def convert_from_file(file_name):
+    content = Path(file_name).read_text()
     return convert(content)
 
-def convert(jsonContent):
-    blocks = json.loads(jsonContent)
-    html = ''.join([
-        build_tag('h1', block['title']) + build_tag('p', block['body'])
-        for block in blocks    
-    ])
+def convert(json_content):
+    blocks = json.loads(json_content, object_pairs_hook=OrderedDict)
+    html = ''
+    for block in blocks:
+        for tag, content in block.items():
+            html += build_tag(tag, content)
     return html
     
 def build_tag(name, content):

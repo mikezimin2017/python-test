@@ -1,6 +1,8 @@
 import json
 from pathlib import Path
 from collections import OrderedDict
+import html
+import re
 
 def convert_from_file(file_name):
     content = Path(file_name).read_text()
@@ -12,17 +14,24 @@ def convert(json_content):
 
 def build_block(block):
     if isinstance(block, str):
-        return block
+        return html.escape(block, quote=False)
     elif isinstance(block, list):
-        result = ''
-        for element in block:
-            result += build_tag('li', build_block(element))
+        result = ''.join(
+            build_tag('li', build_block(element))
+            for element in block
+        )
         return build_tag('ul', result)
     elif isinstance(block, OrderedDict):
-        result = ''
-        for tag, content in block.items():
-            result += build_tag(tag, content)
+        result = ''.join(
+            build_tag(tag, build_block(content))
+            for tag, content in block.items()
+        )
         return result
     
-def build_tag(name, content):
-    return '<{0}>{1}</{0}>'.format(name, build_block(content))
+def build_tag(tag, text):
+    name = re.search(r"[\w\d\-]+", tag).group(0)
+    id = re.search(r"\#([\w\d\-]+)", tag)
+    id_attr = ' id="{0}"'.format(id.group(1)) if id else ''
+    classes = re.findall(r"\.([\w\d\-]+)", tag)
+    classes_attr = ' class="{0}"'.format(' '.join(classes)) if classes else ''
+    return '<{0}{2}{3}>{1}</{0}>'.format(name, text, id_attr, classes_attr)

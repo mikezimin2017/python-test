@@ -7,14 +7,22 @@ def convert_from_file(file_name):
     return convert(content)
 
 def convert(json_content):
-    blocks = json.loads(json_content, object_pairs_hook=OrderedDict)
-    ul_content = ''
-    for block in blocks:
-        li_content = ''
+    block = json.loads(json_content, object_pairs_hook=OrderedDict)
+    return build_block(block)
+
+def build_block(block):
+    if isinstance(block, str):
+        return block
+    elif isinstance(block, list):
+        result = ''
+        for element in block:
+            result += build_tag('li', build_block(element))
+        return build_tag('ul', result)
+    elif isinstance(block, OrderedDict):
+        result = ''
         for tag, content in block.items():
-            li_content += build_tag(tag, content)
-        ul_content += build_tag('li', li_content)
-    return build_tag('ul', ul_content)
+            result += build_tag(tag, content)
+        return result
     
 def build_tag(name, content):
-    return '<{0}>{1}</{0}>'.format(name, content)
+    return '<{0}>{1}</{0}>'.format(name, build_block(content))
